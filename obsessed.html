@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LOVE_OS v2.0 // RETRO-ROMANTIC TERMINAL</title>
+  
+  <!-- Tailwind CSS & Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=VT323&family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons & Canvas Confetti -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #09090D;
+      --pink-cyber: #FF2A85;
+      --cyan-cyber: #00F0FF;
+      --lime-cyber: #00FFA3;
+      --yellow-cyber: #FFE600;
+      --border-hard: 3px solid #000000;
+      --shadow-brutal: 4px 4px 0px #000000;
+      --shadow-brutal-sm: 2px 2px 0px #000000;
+      --shadow-brutal-lg: 6px 6px 0px #000000;
+      --shadow-brutal-hover: 7px 7px 0px #FF2A85;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #FFFFFF;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 1px 1px, rgba(255, 42, 133, 0.18) 1.5px, transparent 0),
+        radial-gradient(circle at 14px 14px, rgba(0, 240, 255, 0.1) 1.5px, transparent 0);
+      background-size: 28px 28px, 28px 28px;
+    }
+
+    /* CRT scanline subtle overlay */
+    .scanlines {
+      background: linear-gradient(
+        rgba(18, 16, 26, 0) 50%, 
+        rgba(0, 0, 0, 0.35) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+    }
+
+    .font-mono-code {
+      font-family: 'Space Mono', monospace;
+    }
+    .font-retro-pixel {
+      font-family: 'VT323', monospace;
+    }
+
+    /* Neo-Brutalist utility classes with micro-interaction hover bounces */
+    .brutal-card {
+      border: var(--border-hard);
+      box-shadow: var(--shadow-brutal);
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+    }
+    .brutal-card:hover {
+      box-shadow: 6px 6px 0px #000000;
+    }
+
+    .brutal-card-lg {
+      border: var(--border-hard);
+      box-shadow: var(--shadow-brutal-lg);
+    }
+
+    .brutal-btn {
+      border: var(--border-hard);
+      box-shadow: var(--shadow-brutal);
+      transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+      user-select: none;
+    }
+    .brutal-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #000000;
+    }
+    .brutal-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #000000;
+    }
+
+    /* Holographic / Chrome sheen effect */
+    .chrome-badge {
+      background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 25%, #8e9eab 50%, #ffffff 75%, #b5bac4 100%);
+      color: #000;
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0px #000;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+    }
+
+    /* Cyber Glitch Effect */
+    .glitch-text {
+      position: relative;
+      display: inline-block;
+    }
+    .glitch-text::before,
+    .glitch-text::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      clip: rect(0, 0, 0, 0);
+    }
+    .glitch-text:hover::before {
+      left: -2px;
+      text-shadow: 2px 0 #FF2A85;
+      animation: glitch-anim-1 1s infinite linear alternate-reverse;
+    }
+    .glitch-text:hover::after {
+      left: 2px;
+      text-shadow: -2px 0 #00F0FF;
+      animation: glitch-anim-2 0.8s infinite linear alternate-reverse;
+    }
+
+    @keyframes glitch-anim-1 {
+      0% { clip: rect(10px, 9999px, 44px, 0); }
+      20% { clip: rect(60px, 9999px, 80px, 0); }
+      40% { clip: rect(20px, 9999px, 30px, 0); }
+      60% { clip: rect(80px, 9999px, 100px, 0); }
+      80% { clip: rect(12px, 9999px, 50px, 0); }
+      100% { clip: rect(40px, 9999px, 70px, 0); }
+    }
+    @keyframes glitch-anim-2 {
+      0% { clip: rect(70px, 9999px, 95px, 0); }
+      20% { clip: rect(15px, 9999px, 35px, 0); }
+      40% { clip: rect(50px, 9999px, 65px, 0); }
+      60% { clip: rect(5px, 9999px, 25px, 0); }
+      80% { clip: rect(35px, 9999px, 85px, 0); }
+      100% { clip: rect(90px, 9999px, 110px, 0); }
+    }
+
+    /* Seamless Endless Marquee */
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marqueeScroll 18s linear infinite;
+    }
+    .marquee-track:hover {
+      animation-play-state: paused;
+    }
+
+    /* Winamp dynamic animated equalizer */
+    @keyframes eqBounce1 { 0%, 100% { height: 4px; } 50% { height: 26px; } }
+    @keyframes eqBounce2 { 0%, 100% { height: 18px; } 50% { height: 6px; } }
+    @keyframes eqBounce3 { 0%, 100% { height: 8px; } 50% { height: 30px; } }
+    @keyframes eqBounce4 { 0%, 100% { height: 24px; } 50% { height: 10px; } }
+    @keyframes eqBounce5 { 0%, 100% { height: 12px; } 50% { height: 28px; } }
+    @keyframes eqBounce6 { 0%, 100% { height: 5px; } 50% { height: 22px; } }
+
+    .eq-bar-1 { animation: eqBounce1 0.45s ease-in-out infinite; }
+    .eq-bar-2 { animation: eqBounce2 0.6s ease-in-out infinite 0.1s; }
+    .eq-bar-3 { animation: eqBounce3 0.38s ease-in-out infinite 0.2s; }
+    .eq-bar-4 { animation: eqBounce4 0.52s ease-in-out infinite 0.15s; }
+    .eq-bar-5 { animation: eqBounce5 0.42s ease-in-out infinite 0.3s; }
+    .eq-bar-6 { animation: eqBounce6 0.5s ease-in-out infinite 0.05s; }
+
+    .paused-animation {
+      animation-play-state: paused !important;
+      height: 4px !important;
+    }
+
+    /* MSN Nudge Screen Shake */
+    @keyframes msnShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-8px, -6px) rotate(-1.5deg); }
+      20% { transform: translate(8px, 6px) rotate(1.5deg); }
+      30% { transform: translate(-10px, 8px) rotate(-1deg); }
+      40% { transform: translate(10px, -8px) rotate(1deg); }
+      50% { transform: translate(-6px, 6px) rotate(-0.5deg); }
+      60% { transform: translate(6px, -4px) rotate(0.5deg); }
+      70% { transform: translate(-4px, 4px) rotate(0deg); }
+      80% { transform: translate(4px, -2px) rotate(0deg); }
+      90% { transform: translate(-2px, 2px) rotate(0deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    .shake-nudge {
+      animation: msnShake 0.65s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    /* Pop-in message bubble animation */
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+      70% { transform: scale(1.05) translateY(-2px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop-in {
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Floating heart pulse */
+    @keyframes heartFloatPulse {
+      0%, 100% { transform: translateY(0px) scale(1); filter: drop-shadow(0 0 4px #FF2A85); }
+      50% { transform: translateY(-8px) scale(1.12); filter: drop-shadow(0 0 12px #FF2A85); }
+    }
+    .animate-float-heart {
+      animation: heartFloatPulse 2.4s ease-in-out infinite;
+    }
+
+    /* Blinking text */
+    @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    .cursor-blink { animation: blink 0.75s infinite; }
+
+    /* Custom Scrollbar for retro logs */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0D0D14; border: 1px solid #000; }
+    ::-webkit-scrollbar-thumb { background: #FF2A85; border: 1px solid #000; }
+  </style>
+</head>
+<body class="min-h-screen pb-24 selection:bg-[#FF2A85] selection:text-black">
+
+  <!-- Real Audio Element for Custom MP3 / External Tracks -->
+  <audio id="real-audio" preload="auto"></audio>
+
+  <!-- Interactive Background Canvas (Pixel Hearts & Sparkles) -->
+  <canvas id="cyberHeartCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+  <!-- CRT Scanlines overlay -->
+  <div class="fixed inset-0 scanlines z-40 pointer-events-none"></div>
+
+  <!-- 1. CYBER TASKBAR (FIXED TOP HEADER) -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#FF2A85] border-b-[3px] border-black text-black px-3 py-1.5 font-mono-code text-[11px] font-bold shadow-[0_3px_0_#000]">
+    <div class="flex items-center justify-between max-lg mx-auto">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2.5 h-2.5 bg-[#00FFA3] border border-black shadow-[1px_1px_0_#000] animate-pulse"></span>
+        <span class="tracking-tight uppercase">SYS: ONLINE ♥</span>
+      </div>
+      <div class="hidden sm:block text-[10px] bg-black text-[#00FFA3] px-2 py-0.5 border border-black shadow-[1px_1px_0_#000]">
+        PING: 0ms [CONNECTED TO YOU]
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] bg-black text-[#FF2A85] px-1.5 py-0.5 border border-black font-retro-pixel text-xs tracking-wider">
+          LVL: 100% [████]
+        </span>
+        <span id="digital-clock" class="bg-white text-black px-1.5 py-0.5 border border-black text-[10px] font-mono-code font-extrabold shadow-[1px_1px_0_#000]">
+          00:00:00
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER CONTAINER -->
+  <main id="app-main" class="max-w-lg mx-auto px-3.5 pt-14 space-y-6 relative z-10 transition-transform">
+
+    <!-- TOP FLOATING TICKER MARQUEE -->
+    <div class="bg-[#00FFA3] text-black border-[3px] border-black p-1 shadow-[3px_3px_0_#000] font-retro-pixel text-lg uppercase font-bold tracking-wider overflow-hidden">
+      <div class="marquee-track flex gap-6">
+        <span>★ CRITICAL ALERT: YOU LOOK BREATHTAKING TODAY ★</span>
+        <span>♥ LOVE UPTIME: 100% STABLE WITH ZERO RUNTIME ERRORS ♥</span>
+        <span>★ HEART CORE TEMP: 104°F OVERCLOCKED WITH AFFECTION ★</span>
+        <span>♥ UNCONDITIONAL DEVOTION GUARANTEED FOREVER ♥</span>
+        <!-- Duplicated items for endless smooth loop -->
+        <span>★ CRITICAL ALERT: YOU LOOK BREATHTAKING TODAY ★</span>
+        <span>♥ LOVE UPTIME: 100% STABLE WITH ZERO RUNTIME ERRORS ♥</span>
+        <span>★ HEART CORE TEMP: 104°F OVERCLOCKED WITH AFFECTION ★</span>
+        <span>♥ UNCONDITIONAL DEVOTION GUARANTEED FOREVER ♥</span>
+      </div>
+    </div>
+
+    <!-- 2. HERO SECTION - "BOOT_SEQUENCE.EXE" WINDOW -->
+    <section id="window-boot" class="brutal-card bg-[#14141E] text-white transition-all duration-300">
+      <!-- Title Bar with interactive control buttons -->
+      <div class="bg-[#242438] border-b-[3px] border-black px-3 py-1.5 flex items-center justify-between select-none">
+        <div class="flex items-center gap-2 font-mono-code text-[11px] text-[#00F0FF] font-bold">
+          <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+          <span>C:\USERS\HEART\BOOT_SEQUENCE.EXE</span>
+        </div>
+        <div class="flex items-center gap-1 font-mono-code text-xs font-black">
+          <button onclick="handleWindowAction('window-boot', 'min')" class="w-4 h-4 bg-[#FFE600] text-black border border-black flex items-center justify-center leading-none text-[9px] hover:brightness-110 active:translate-y-0.5">_</button>
+          <button onclick="handleWindowAction('window-boot', 'max')" class="w-4 h-4 bg-[#00FFA3] text-black border border-black flex items-center justify-center leading-none text-[9px] hover:brightness-110 active:translate-y-0.5">□</button>
+          <button onclick="handleWindowAction('window-boot', 'close')" class="w-4 h-4 bg-[#FF2A85] text-black border border-black flex items-center justify-center leading-none text-[9px] hover:brightness-110 active:translate-y-0.5">×</button>
+        </div>
+      </div>
+
+      <!-- Window Content -->
+      <div class="window-body p-4 space-y-4">
+        <!-- Terminal Diagnostics Box -->
+        <div class="bg-[#08080C] border-2 border-black p-3 font-mono-code text-[11px] text-[#00FFA3] space-y-1 shadow-inner relative overflow-hidden">
+          <p class="text-gray-400">> Initializing emotion core v2.0...</p>
+          <p class="text-[#00F0FF]">> Neural synapse tether: SYNCHRONIZED (0ms)</p>
+          <p class="text-[#FF2A85] font-bold">> WARNING: Affection parameters overloaded [404_RESISTANCE_NOT_FOUND]</p>
+          <p class="text-white">> Target verified: <span class="bg-[#FF2A85] text-black font-black px-1">My Favorite Human</span> <span class="text-[#FF2A85]">♥</span><span class="cursor-blink">_</span></p>
+        </div>
+
+        <!-- Big Brutalist Headline with Glitch Effect -->
+        <div class="space-y-2">
+          <div class="inline-block chrome-badge px-2 py-0.5 text-[10px] uppercase font-mono-code">
+            ★ SYSTEM STATUS: PERMANENTLY IN LOVE ★
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-black tracking-tight leading-[0.95] text-white uppercase select-none">
+            OFFICIALLY <span class="glitch-text text-transparent bg-clip-text bg-gradient-to-r from-[#FF2A85] via-[#FFA3CF] to-[#00F0FF]" data-text="OBSESSED">OBSESSED</span> WITH YOU.
+          </h1>
+          <p class="font-mono-code text-xs text-gray-300 leading-relaxed border-l-2 border-[#FF2A85] pl-2.5">
+            Kernel patch applied: Every single simulation confirms that having you in my life is the best execution path ever compiled.
+          </p>
+        </div>
+
+        <!-- Action CTAs with Web Audio Sound Effects -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <button onclick="playMusicToggle(); playSound('chime');" class="brutal-btn bg-[#FF2A85] text-black font-mono-code font-black text-xs py-2.5 px-2 text-center flex items-center justify-center gap-1.5 shadow-[3px_3px_0_#000]">
+            <i data-lucide="disc-3" class="w-4 h-4 animate-spin"></i>
+            <span id="hero-mixtape-btn-text">[ PLAY MIXTAPE ]</span>
+          </button>
+          <a href="#memories" onclick="playSound('click');" class="brutal-btn bg-[#00FFA3] text-black font-mono-code font-black text-xs py-2.5 px-2 text-center flex items-center justify-center gap-1 shadow-[3px_3px_0_#000]">
+            <i data-lucide="folder-heart" class="w-4 h-4"></i>
+            <span>[ MEMORIES ↓ ]</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. REAL-TIME TELEMETRY & STAT TRACKER PANEL -->
+    <section class="brutal-card bg-[#14141E]">
+      <!-- Title bar -->
+      <div class="bg-[#FFE600] text-black border-b-[3px] border-black px-3 py-1.5 flex items-center justify-between font-mono-code text-[11px] font-bold select-none">
+        <div class="flex items-center gap-1.5">
+          <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+          <span>DIAGNOSTICS_UPTIME.LOG</span>
+        </div>
+        <button onclick="editLoveDate()" class="text-[9px] bg-black text-[#FFE600] px-1.5 py-0.5 hover:bg-white hover:text-black transition">
+          EDIT DATE ⚙
+        </button>
+      </div>
+
+      <div class="p-4 space-y-3.5">
+        <!-- Live Uptime Clock Widget -->
+        <div class="bg-[#000000] border-2 border-black p-3 text-center brutal-card">
+          <div class="text-[10px] font-mono-code text-[#00F0FF] uppercase tracking-wider mb-2 flex items-center justify-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-[#00FFA3] animate-ping"></span>
+            <span>CONTINUOUS TOGETHER UPTIME</span>
+          </div>
+          
+          <div class="grid grid-cols-4 gap-2 text-center font-retro-pixel">
+            <div class="bg-[#1C1C28] p-2 border-2 border-black shadow-[2px_2px_0_#000]">
+              <span id="uptime-days" class="text-3xl sm:text-4xl text-[#FF2A85] block leading-none font-bold">0</span>
+              <span class="text-[10px] font-mono-code text-gray-400">DAYS</span>
+            </div>
+            <div class="bg-[#1C1C28] p-2 border-2 border-black shadow-[2px_2px_0_#000]">
+              <span id="uptime-hours" class="text-3xl sm:text-4xl text-[#00FFA3] block leading-none font-bold">00</span>
+              <span class="text-[10px] font-mono-code text-gray-400">HOURS</span>
+            </div>
+            <div class="bg-[#1C1C28] p-2 border-2 border-black shadow-[2px_2px_0_#000]">
+              <span id="uptime-mins" class="text-3xl sm:text-4xl text-[#00F0FF] block leading-none font-bold">00</span>
+              <span class="text-[10px] font-mono-code text-gray-400">MINS</span>
+            </div>
+            <div class="bg-[#1C1C28] p-2 border-2 border-black shadow-[2px_2px_0_#000]">
+              <span id="uptime-secs" class="text-3xl sm:text-4xl text-[#FFE600] block leading-none font-bold">00</span>
+              <span class="text-[10px] font-mono-code text-gray-400">SECS</span>
+            </div>
+          </div>
+          <div class="text-[9px] font-mono-code text-gray-400 mt-2">
+            Started: <span id="display-start-date" class="text-white font-bold">2023-02-14</span>
+          </div>
+        </div>
+
+        <!-- 3 Diagnostic Stats -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-[#1A1A26] border-2 border-black p-2.5 shadow-[2px_2px_0_#000]">
+            <div class="text-[9px] font-mono-code text-gray-400 uppercase">HUGS SENT</div>
+            <div class="text-sm sm:text-base font-black text-[#FF2A85] font-mono-code mt-0.5">9,999+ GB</div>
+            <div class="text-[8px] font-mono-code text-[#00FFA3]">UNCOMPRESSED</div>
+          </div>
+          <div class="bg-[#1A1A26] border-2 border-black p-2.5 shadow-[2px_2px_0_#000]">
+            <div class="text-[9px] font-mono-code text-gray-400 uppercase">INSIDE JOKES</div>
+            <div class="text-sm sm:text-base font-black text-[#00FFA3] font-mono-code mt-0.5">∞ CACHED</div>
+            <div class="text-[8px] font-mono-code text-gray-400">0% LOSS</div>
+          </div>
+          <div class="bg-[#1A1A26] border-2 border-black p-2.5 shadow-[2px_2px_0_#000]">
+            <div class="text-[9px] font-mono-code text-gray-400 uppercase">PATIENCE</div>
+            <div class="text-sm sm:text-base font-black text-[#00F0FF] font-mono-code mt-0.5">100%</div>
+            <div class="text-[8px] font-mono-code text-[#FFE600]">ZERO BUGS</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. MEMORY FILE EXPLORER ("D:\ARCHIVE\OUR_DAYS") -->
+    <section id="memories" class="brutal-card bg-[#14141E]">
+      <!-- Explorer Title bar -->
+      <div class="bg-[#00F0FF] text-black border-b-[3px] border-black px-3 py-1.5 flex items-center justify-between font-mono-code text-[11px] font-bold select-none">
+        <div class="flex items-center gap-1.5">
+          <i data-lucide="folder-open" class="w-3.5 h-3.5 text-black"></i>
+          <span>D:\ARCHIVE\OUR_DAYS</span>
+        </div>
+        <span class="text-[9px] bg-black text-[#00F0FF] px-1 font-mono-code">3 ITEMS FOUND</span>
+      </div>
+
+      <div class="p-4 space-y-4">
+        <!-- Memory File 1: Polaroid Card with hover tilt -->
+        <div class="bg-white text-black p-3 brutal-card relative rotate-[-1.5deg] hover:rotate-0 hover:scale-[1.02] transition-all duration-200">
+          <!-- Chrome Tape Sticker -->
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 chrome-badge px-3 py-0.5 text-[9px] uppercase tracking-wider font-mono-code z-10">
+            ★ SNAPSHOT_001.JPG ★
+          </div>
+          <div class="border-2 border-black bg-[#EAEAEA] p-1.5 relative overflow-hidden">
+            <div class="h-40 w-full bg-gradient-to-tr from-[#2c1338] via-[#751b54] to-[#ff4d79] flex flex-col justify-between p-3 relative group">
+              <!-- Pixel heart inside photo -->
+              <div class="text-right text-xl font-retro-pixel text-white/90 animate-bounce">
+                ♥ ♥ ♥
+              </div>
+              <div class="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px] opacity-25"></div>
+              <!-- Camera Orange Timestamp -->
+              <div class="font-retro-pixel text-xl text-[#FF9E00] tracking-widest drop-shadow-[0_1px_2px_#000]">
+                '24 11 05 21:42
+              </div>
+            </div>
+          </div>
+          <div class="pt-2 flex items-center justify-between font-mono-code">
+            <div>
+              <span class="font-black text-xs block">first_date_raw.jpg</span>
+              <span class="text-[10px] text-gray-600">The coffee shop corner where time stopped.</span>
+            </div>
+            <button onclick="triggerConfetti(event); playSound('click');" class="bg-[#FF2A85] text-black font-black text-[9px] px-2 py-1 border border-black hover:bg-black hover:text-[#FF2A85] transition">
+              HEART IT ♥
+            </button>
+          </div>
+        </div>
+
+        <!-- Memory File 2: Video Snippet Card -->
+        <div class="bg-[#1A1A26] p-3 brutal-card rotate-[1deg] hover:rotate-0 hover:scale-[1.02] transition-all duration-200">
+          <div class="flex items-center justify-between pb-1.5 font-mono-code text-[11px]">
+            <span class="text-[#00FFA3] font-bold flex items-center gap-1">
+              <i data-lucide="video" class="w-3.5 h-3.5"></i> silly_moments.gif
+            </span>
+            <span class="bg-black text-[#FFE600] text-[9px] px-1.5 py-0.5 border border-gray-700">120 FPS</span>
+          </div>
+          <!-- Fake player screen -->
+          <div class="h-28 w-full bg-black border-2 border-black relative flex items-center justify-center overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-r from-purple-900/30 to-pink-900/40"></div>
+            <button onclick="triggerVideoClipModal(); playSound('click');" class="z-10 bg-[#FF2A85] text-black px-3 py-1.5 border-2 border-black brutal-btn flex items-center gap-1.5 font-mono-code text-xs font-black">
+              <i data-lucide="play" class="w-4 h-4 fill-black"></i> [REPLAY SMILE]
+            </button>
+            <div class="absolute bottom-1.5 left-2 font-mono-code text-[9px] text-[#00F0FF]">
+              #LATE_NIGHT_LAUGHS #ICE_CREAM_DATE
+            </div>
+          </div>
+        </div>
+
+        <!-- Memory File 3: Coordinates / Note Card -->
+        <div class="bg-[#FFFBDB] text-black p-3.5 brutal-card font-mono-code text-xs space-y-1 rotate-[-0.5deg]">
+          <div class="flex items-center justify-between text-[10px] text-gray-600 border-b border-gray-400 pb-1">
+            <span class="font-bold flex items-center gap-1 text-black">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#FF2A85]"></i> stargazing_night.loc
+            </span>
+            <span class="bg-black text-white px-1 text-[9px]">FAVORITE SPOT</span>
+          </div>
+          <p class="pt-1 italic font-semibold text-gray-800 leading-relaxed">
+            "Under cold midnight air, you shared your oversized hoodie and told me your wild dreams. Right then, I knew my heart was home."
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. WINAMP AUDIO & MSN CHAT MESSENGER HUB -->
+    <section class="space-y-5">
+      <!-- RETRO WINAMP AUDIO PLAYER -->
+      <div class="brutal-card bg-[#111116] border-[3px] border-black">
+        <!-- Winamp Header -->
+        <div class="bg-gradient-to-r from-[#1A1A35] via-[#481232] to-[#1A1A35] border-b-2 border-black px-2.5 py-1.5 flex items-center justify-between text-[10px] font-mono-code text-[#00FFA3] select-none">
+          <div class="flex items-center gap-1.5 font-bold">
+            <i data-lucide="music" class="w-3 h-3 text-[#FF2A85]"></i>
+            <span>LOVE_AMP v2.0 - [CUSTOM AUDIO SUPPORT]</span>
+          </div>
+          <div class="flex gap-1 text-[9px]">
+            <button onclick="promptCustomMusicUrl()" class="bg-[#FFE600] text-black px-1.5 font-black hover:bg-white transition" title="Ganti Link Lagu MP3 Sendiri">
+              + URL / MP3
+            </button>
+            <span class="bg-[#FF2A85] text-black px-1 font-black">EQ</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 space-y-3">
+          <!-- Marquee Track Title Display -->
+          <div class="bg-black border-2 border-black p-2 flex items-center justify-between font-retro-pixel text-lg text-[#00FFA3] overflow-hidden">
+            <div class="truncate flex items-center gap-2">
+              <span class="text-[#FF2A85] font-mono-code text-xs">♪</span>
+              <span id="track-name" class="tracking-wider">LOVE_THEME - 8-BIT SWEET SYNTH CHIPTUNE</span>
+            </div>
+            <span id="track-timer" class="text-[#00F0FF] text-sm font-mono-code font-bold">00:00</span>
+          </div>
+
+          <!-- Graphic Equalizer & Progress Bar -->
+          <div class="bg-[#060608] border border-black p-2.5 flex items-center justify-between">
+            <!-- Animated EQ bars -->
+            <div id="eq-container" class="flex items-end gap-1 h-7">
+              <div class="w-1.5 bg-[#FF2A85] eq-bar-1 border border-black"></div>
+              <div class="w-1.5 bg-[#FF66B2] eq-bar-2 border border-black"></div>
+              <div class="w-1.5 bg-[#00FFA3] eq-bar-3 border border-black"></div>
+              <div class="w-1.5 bg-[#00F0FF] eq-bar-4 border border-black"></div>
+              <div class="w-1.5 bg-[#FFE600] eq-bar-5 border border-black"></div>
+              <div class="w-1.5 bg-[#FF2A85] eq-bar-6 border border-black"></div>
+            </div>
+
+            <!-- Scrubber timeline -->
+            <div class="flex-1 mx-3">
+              <div class="w-full bg-gray-900 h-2.5 border border-black relative cursor-pointer" onclick="scrubAudio(event)">
+                <div id="playback-progress" class="bg-gradient-to-r from-[#FF2A85] to-[#00FFA3] h-full w-0 transition-all duration-150"></div>
+              </div>
+            </div>
+
+            <!-- Sound state badge -->
+            <div id="synth-status" class="font-mono-code text-[9px] text-[#00FFA3] border border-gray-700 px-1.5 py-0.5">
+              SYNTH: READY
+            </div>
+          </div>
+
+          <!-- Playback Control Buttons -->
+          <div class="flex items-center justify-between gap-1.5 font-mono-code text-xs">
+            <button onclick="prevTrack()" class="flex-1 brutal-btn bg-[#2B2B3D] text-white py-1.5 text-center flex items-center justify-center">
+              <i data-lucide="skip-back" class="w-3.5 h-3.5"></i>
+            </button>
+            <button id="main-play-btn" onclick="playMusicToggle()" class="flex-[2] brutal-btn bg-[#00FFA3] text-black font-black py-1.5 text-center flex items-center justify-center gap-1.5">
+              <i id="play-icon" data-lucide="play" class="w-3.5 h-3.5 fill-black"></i>
+              <span id="play-text">PLAY TRACK</span>
+            </button>
+            <button onclick="nextTrack()" class="flex-1 brutal-btn bg-[#2B2B3D] text-white py-1.5 text-center flex items-center justify-center">
+              <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="triggerConfetti(event); playSound('click');" class="brutal-btn bg-[#FF2A85] text-black px-2.5 py-1.5 font-bold flex items-center justify-center" title="Send a Heart">
+              <i data-lucide="heart" class="w-3.5 h-3.5 fill-black"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RETRO MSN CHAT MESSENGER -->
+      <div id="msn-window" class="brutal-card bg-[#14141E] border-[3px] border-black transition-all">
+        <!-- Title bar -->
+        <div class="bg-[#FF2A85] text-black border-b-2 border-black px-3 py-1 flex items-center justify-between font-mono-code text-[11px] font-bold select-none">
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+            <span>MSN_HEART_MESSENGER // @favorite_one</span>
+          </div>
+          <span class="w-2.5 h-2.5 bg-[#00FFA3] rounded-none border border-black shadow-[1px_1px_0_#000]"></span>
+        </div>
+
+        <div class="p-3.5 space-y-3">
+          <!-- Chat Messages Area -->
+          <div id="chat-messages-container" class="space-y-2.5 font-mono-code text-[11px] max-h-56 overflow-y-auto pr-1">
+            <!-- Incoming message -->
+            <div class="flex items-start gap-2">
+              <div class="w-6 h-6 bg-[#00F0FF] border border-black flex items-center justify-center font-bold text-black text-[10px] flex-shrink-0">
+                U
+              </div>
+              <div class="bg-[#1C1C28] border border-black p-2 text-gray-200 shadow-[2px_2px_0_#000] flex-1">
+                <div class="text-[9px] text-[#00F0FF] font-bold mb-0.5">you (11:11 PM)</div>
+                did you eat dinner yet or just drinking iced coffee again? ☕
+              </div>
+            </div>
+
+            <!-- Outgoing message -->
+            <div class="flex items-start gap-2 flex-row-reverse">
+              <div class="w-6 h-6 bg-[#FF2A85] border border-black flex items-center justify-center font-bold text-black text-[10px] flex-shrink-0">
+                ME
+              </div>
+              <div class="bg-[#FF2A85] text-black font-semibold border border-black p-2 shadow-[2px_2px_0_#000] flex-1">
+                <div class="text-[9px] text-black font-black mb-0.5">me (11:12 PM)</div>
+                i ate! but more importantly i saw a cat today that walked exactly like your grumpy morning face haha ♥
+              </div>
+            </div>
+
+            <!-- Incoming message -->
+            <div class="flex items-start gap-2">
+              <div class="w-6 h-6 bg-[#00F0FF] border border-black flex items-center justify-center font-bold text-black text-[10px] flex-shrink-0">
+                U
+              </div>
+              <div class="bg-[#1C1C28] border border-black p-2 text-gray-200 shadow-[2px_2px_0_#000] flex-1">
+                <div class="text-[9px] text-[#00F0FF] font-bold mb-0.5">you (11:13 PM)</div>
+                hey!! stop bullying me!! (send picture immediately pls 🥺)
+              </div>
+            </div>
+          </div>
+
+          <!-- Typing input & Nudge button -->
+          <div class="flex items-center gap-1.5 pt-1">
+            <input type="text" id="chat-input" placeholder="Type romantic payload here..." onkeypress="handleChatEnter(event)" class="flex-1 bg-black border-2 border-black px-2.5 py-1.5 text-xs font-mono-code text-white focus:outline-none focus:border-[#FF2A85] shadow-[2px_2px_0_#000]">
+            <button onclick="sendQuickChatMessage()" class="brutal-btn bg-[#00FFA3] text-black font-mono-code font-black text-xs px-3 py-1.5">
+              SEND
+            </button>
+            <button onclick="nudgeVibrate()" class="brutal-btn bg-[#FFE600] text-black font-mono-code font-black text-xs px-2.5 py-1.5 flex items-center justify-center gap-1" title="MSN NUDGE!">
+              ⚡ <span class="hidden sm:inline text-[10px]">NUDGE</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. THE CLASSIFIED LOVE DOSSIER (MAIN LETTER) -->
+    <section class="brutal-card bg-[#14141E]">
+      <!-- Caution banner header -->
+      <div class="bg-[#FF2A85] text-black border-b-[3px] border-black px-3 py-1.5 flex items-center justify-between font-mono-code text-[11px] font-black select-none">
+        <div class="flex items-center gap-1.5">
+          <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+          <span>⚠ CAUTION: ENCRYPTED AFFECTION LOG</span>
+        </div>
+        <span class="bg-black text-white px-1.5 py-0.5 text-[9px]">RESTRICTED</span>
+      </div>
+
+      <div class="p-4">
+        <!-- Parchment style container for readability & warm contrast -->
+        <div class="bg-[#F8F7F0] text-black border-2 border-black p-4 sm:p-5 brutal-card relative">
+          <!-- Top Stamps & Metadata -->
+          <div class="flex items-center justify-between border-b-2 border-dashed border-gray-400 pb-2 mb-3">
+            <div class="font-mono-code text-[10px] text-gray-700">
+              <div><strong class="text-black">CLASSIFICATION:</strong> TOP SECRET / EYES ONLY</div>
+              <div><strong class="text-black">SUBJECT ID:</strong> #01_SOULMATE</div>
+            </div>
+            <div class="border-2 border-[#FF2A85] text-[#FF2A85] font-black text-[10px] px-2 py-0.5 uppercase tracking-tighter rotate-[-5deg] shadow-[1px_1px_0_#000]">
+              VERIFIED AUTHENTIC ♥
+            </div>
+          </div>
+
+          <!-- Heartfelt Letter Content -->
+          <article class="space-y-3 font-mono-code text-xs leading-relaxed text-gray-900">
+            <p class="font-bold text-sm text-[#FF2A85]">
+              To my favorite person across every universe,
+            </p>
+            <p>
+              I made this little OS because regular words sometimes feel too small to hold everything you mean to me. In a world full of noise, endless notifications, and rushed days, having you to laugh with is my favorite constant.
+            </p>
+            <p>
+              Thank you for being the one who makes ordinary grocery runs feel like adventures, who knows which song to play when I’m exhausted, and whose smile still completely disarms me without fail.
+            </p>
+            <p>
+              If my life were a codebase, you’re the part that makes everything compile without a single runtime error. I’d pick you every single time.
+            </p>
+          </article>
+
+          <!-- ASCII Art Heart Signoff -->
+          <div class="mt-4 pt-3 border-t-2 border-dashed border-gray-400 flex items-center justify-between font-mono-code">
+            <pre class="text-[9px] text-[#FF2A85] font-bold leading-tight font-retro-pixel select-none">
+  ♥   ♥
+ ♥  ♥  ♥
+  ♥   ♥
+    ♥
+            </pre>
+            <div class="text-right">
+              <span class="text-[10px] text-gray-500 block uppercase">SIGNATURE OF SENDER:</span>
+              <span id="letter-sender-display" class="font-black text-xs text-black border-b-2 border-black">Yours Always & Forever</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. SYSTEM VERIFICATION DIALOG (INTERACTIVE FINALE) -->
+    <section class="brutal-card bg-[#181824] border-[3px] border-black">
+      <div class="bg-[#FF0055] text-white border-b-2 border-black px-3 py-1 flex items-center justify-between font-mono-code text-[11px] font-bold select-none">
+        <div class="flex items-center gap-1.5">
+          <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-[#FFE600]"></i>
+          <span>FATAL_EXCEPTION: UNCONDITIONAL_LOVE</span>
+        </div>
+        <span class="text-xs">0xLOVE</span>
+      </div>
+
+      <div class="p-5 text-center space-y-4">
+        <div class="w-14 h-14 mx-auto bg-[#FF2A85] border-2 border-black flex items-center justify-center brutal-card animate-float-heart">
+          <i data-lucide="heart" class="w-8 h-8 text-black fill-black"></i>
+        </div>
+
+        <div class="space-y-1">
+          <h3 class="text-lg font-black uppercase text-white font-mono-code">
+            CONFIRM SYSTEM CONTINUITY?
+          </h3>
+          <p class="font-mono-code text-xs text-gray-300 max-w-xs mx-auto">
+            "Will you continue being my favorite human, partner-in-crime, and designated hand-holder forever?"
+          </p>
+        </div>
+
+        <!-- Yes / No Interaction with Runaway Button -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 relative min-h-[64px]">
+          <!-- Primary button with Confetti and Sound -->
+          <button id="yes-btn" onclick="celebrateLove(event)" class="w-full sm:w-auto brutal-btn bg-[#FF2A85] text-black font-black font-mono-code text-sm py-2.5 px-6 flex items-center justify-center gap-2 shadow-[4px_4px_0_#000]">
+            <span>[ ABSOLUTELY YES ]</span>
+            <span>♥</span>
+          </button>
+
+          <!-- Playful Runaway Button -->
+          <button id="runaway-btn" onmouseover="dodgeButton()" onclick="dodgeButton()" class="w-full sm:w-auto brutal-btn bg-[#2A2A38] text-gray-300 font-mono-code text-xs py-2.5 px-4 transition-all duration-200">
+            [ CANCEL / NO ]
+          </button>
+        </div>
+
+        <!-- Pop-in confirmation certificate banner -->
+        <div id="love-confirmed-msg" class="hidden font-mono-code text-xs text-[#00FFA3] font-bold bg-black p-3 border-2 border-[#00FFA3] shadow-[4px_4px_0_#000] animate-pop-in space-y-1">
+          <p class="text-base text-[#FFE600]">★ EXCEPTION RESOLVED WITH 100% AFFECTION ★</p>
+          <p class="text-white">Lifetime warranty sealed! You are officially bound to endless cuddles & snacks.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 8. FOOTER: RETRO OS START BAR -->
+  <footer class="fixed bottom-0 left-0 right-0 z-50 bg-[#C0C0C0] border-t-[3px] border-black text-black px-3 py-1.5 shadow-[0_-3px_0_#000] font-mono-code text-xs">
+    <div class="max-w-lg mx-auto flex items-center justify-between">
+      <!-- Start Button -->
+      <button onclick="toggleStartMenu(); playSound('click');" class="brutal-btn bg-[#00FFA3] text-black px-3 py-1 font-black flex items-center gap-1.5 text-xs shadow-[2px_2px_0_#000]">
+        <span class="w-3 h-3 bg-[#FF2A85] border border-black inline-block"></span>
+        <span>START</span>
+      </button>
+
+      <span class="text-[9px] text-gray-800 truncate px-2 font-mono-code font-bold">
+        LOVE_OS v2.0 — COMPILED WITH PURE AFFECTION.
+      </span>
+
+      <!-- Sound FX Toggle -->
+      <button onclick="toggleAudioMute();" id="audio-toggle-btn" class="bg-white border border-black px-2 py-0.5 text-[10px] font-bold flex items-center gap-1 shadow-[1px_1px_0_#000] hover:bg-gray-100">
+        <i id="volume-icon" data-lucide="volume-2" class="w-3 h-3"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Retro Start Menu Modal -->
+  <div id="start-menu" class="hidden fixed bottom-12 left-4 z-50 w-64 bg-[#C0C0C0] border-[3px] border-black p-1.5 shadow-[5px_5px_0_#000] font-mono-code text-xs animate-pop-in">
+    <div class="bg-[#000080] text-white font-bold px-2 py-1 flex items-center justify-between mb-1">
+      <span>LOVE_OS v2.0 MENU</span>
+      <button onclick="toggleStartMenu()" class="text-white hover:text-red-400">×</button>
+    </div>
+    <div class="space-y-1 text-black">
+      <a href="#memories" onclick="toggleStartMenu(); playSound('click');" class="block px-2 py-1.5 hover:bg-[#000080] hover:text-white flex items-center gap-2">
+        <i data-lucide="folder" class="w-3.5 h-3.5"></i> Memories Archive
+      </a>
+      <button onclick="celebrateLove(event); toggleStartMenu();" class="w-full text-left px-2 py-1.5 hover:bg-[#000080] hover:text-white flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#FF2A85]"></i> Trigger Confetti
+      </button>
+      <button onclick="promptCustomMusicUrl(); toggleStartMenu();" class="w-full text-left px-2 py-1.5 hover:bg-[#000080] hover:text-white flex items-center gap-2">
+        <i data-lucide="disc-3" class="w-3.5 h-3.5 text-[#00F0FF]"></i> Set Custom Song URL
+      </button>
+      <button onclick="editLoveDate(); toggleStartMenu();" class="w-full text-left px-2 py-1.5 hover:bg-[#000080] hover:text-white flex items-center gap-2">
+        <i data-lucide="calendar" class="w-3.5 h-3.5 text-[#FFE600]"></i> Update Start Date
+      </button>
+      <div class="border-t border-gray-600 my-1"></div>
+      <div class="px-2 py-1 text-[10px] text-gray-700 font-bold">
+        User: Favorite_Human#001 [VIP]
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT: WEB AUDIO SYNTHESIZER, REAL AUDIO PLAYER, PIXEL CANVAS & INTERACTIONS -->
+  <script>
+    /* ==============================================================
+       1. WEB AUDIO SYNTHESIZER & REAL AUDIO INTEGRATION
+       ============================================================== */
+    let audioCtx = null;
+    let isSoundMuted = false;
+    let isMixtapePlaying = false;
+    let synthTimer = null;
+    let synthNoteStep = 0;
+
+    // Real Audio Element
+    const realAudio = document.getElementById('real-audio');
+
+    // Playlist Config - Easily customize or point to local mp3: e.g. "lagu-kita.mp3"
+    let playlist = [
+      {
+        title: "LOVE_THEME - 8-BIT SWEET SYNTH CHIPTUNE",
+        type: "synth", // Pure 8-bit standalone chiptune
+        src: ""
+      },
+      {
+        title: "HONNE - DAY 1 (LO-FI EDITION)",
+        type: "audio",
+        src: "Honne-Day 1.mp3" // Default pleasant placeholder, change to your own mp3!
+      },
+      {
+        title: "THE 1975 - ABOUT YOU",
+        type: "audio",
+        src: "The 1975 - About You.mp3" // When src is empty, falls back to nostalgic 8-bit synth
+      }
+    ];
+    let currentTrackIdx = 0;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (isSoundMuted) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+
+        const now = ctx.currentTime;
+
+        if (type === 'click') {
+          // Sharp 8-bit UI click
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(200, now + 0.04);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.04);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.045);
+        } else if (type === 'nudge') {
+          // MSN vibrating dual-tone buzzer
+          [130, 160].forEach(freq => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.35);
+          });
+        } else if (type === 'chime') {
+          // Happy romantic arpeggio (C5 - E5 - G5 - C6)
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.3);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.07);
+            osc.stop(now + idx * 0.07 + 0.35);
+          });
+        } else if (type === 'beep') {
+          // Retro error alert beep
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(440, now);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.13);
+        }
+      } catch (err) {
+        console.warn('AudioContext unavailable:', err);
+      }
+    }
+
+    // Sweet 8-bit chiptune love melody synthesized continuously
+    const chiptuneMelody = [
+      { f: 523.25, d: 0.18 }, // C5
+      { f: 659.25, d: 0.18 }, // E5
+      { f: 783.99, d: 0.18 }, // G5
+      { f: 659.25, d: 0.18 }, // E5
+      { f: 880.00, d: 0.36 }, // A5
+      { f: 783.99, d: 0.36 }, // G5
+      { f: 659.25, d: 0.18 }, // E5
+      { f: 587.33, d: 0.18 }, // D5
+      { f: 523.25, d: 0.36 }, // C5
+      { f: 440.00, d: 0.18 }, // A4
+      { f: 523.25, d: 0.36 }  // C5
+    ];
+
+    function stepChiptuneSynth() {
+      if (!isMixtapePlaying || isSoundMuted) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const note = chiptuneMelody[synthNoteStep % chiptuneMelody.length];
+        synthNoteStep++;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(note.f, now);
+
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.005, now + note.d * 0.9);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + note.d);
+
+        synthTimer = setTimeout(stepChiptuneSynth, note.d * 1000);
+      } catch (e) {
+        // fallback
+      }
+    }
+
+    /* ==============================================================
+       2. PIXEL HEARTS CANVAS BACKGROUND WITH MOUSE INTERACTION
+       ============================================================== */
+    function initCyberHeartCanvas() {
+      const canvas = document.getElementById('cyberHeartCanvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      let mouseX = window.innerWidth / 2;
+      let mouseY = window.innerHeight / 2;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+
+      class HeartParticle {
+        constructor() {
+          this.reset();
+        }
+        reset() {
+          this.x = Math.random() * canvas.width;
+          this.y = canvas.height + 20 + Math.random() * 40;
+          this.size = Math.floor(Math.random() * 4) + 3;
+          this.speedY = Math.random() * 1.2 + 0.6;
+          this.speedX = (Math.random() - 0.5) * 0.8;
+          this.alpha = Math.random() * 0.6 + 0.2;
+          this.color = Math.random() > 0.4 ? '#FF2A85' : (Math.random() > 0.5 ? '#00FFA3' : '#00F0FF');
+        }
+        update() {
+          this.y -= this.speedY;
+          this.x += this.speedX;
+
+          const dx = this.x - mouseX;
+          const dy = this.y - mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 80) {
+            this.x += (dx / dist) * 1.5;
+          }
+
+          if (this.y < -30) this.reset();
+        }
+        draw() {
+          ctx.save();
+          ctx.globalAlpha = this.alpha;
+          ctx.fillStyle = this.color;
+          const s = this.size;
+
+          ctx.fillRect(this.x - s, this.y - s * 2, s, s);
+          ctx.fillRect(this.x + s, this.y - s * 2, s, s);
+          ctx.fillRect(this.x - s * 2, this.y - s, s * 5, s);
+          ctx.fillRect(this.x - s * 2, this.y, s * 5, s);
+          ctx.fillRect(this.x - s, this.y + s, s * 3, s);
+          ctx.fillRect(this.x, this.y + s * 2, s, s);
+
+          ctx.restore();
+        }
+      }
+
+      for (let i = 0; i < 24; i++) {
+        particles.push(new HeartParticle());
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    /* ==============================================================
+       3. LIVE UPTIME COUNTER & TIME MANAGEMENT
+       ============================================================== */
+    let loveStartDate = localStorage.getItem('love_os_start_date') || '2023-02-14';
+
+    function initUptimeCounter() {
+      const displayDateEl = document.getElementById('display-start-date');
+      if (displayDateEl) displayDateEl.textContent = loveStartDate;
+
+      function updateCounter() {
+        const start = new Date(loveStartDate).getTime();
+        const now = new Date().getTime();
+        const diff = Math.max(0, now - start);
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById('uptime-days').textContent = days;
+        document.getElementById('uptime-hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('uptime-mins').textContent = mins.toString().padStart(2, '0');
+        document.getElementById('uptime-secs').textContent = secs.toString().padStart(2, '0');
+      }
+
+      updateCounter();
+      setInterval(updateCounter, 1000);
+    }
+
+    function editLoveDate() {
+      playSound('beep');
+      const newDate = prompt("Enter reference start date (YYYY-MM-DD):", loveStartDate);
+      if (newDate && !isNaN(new Date(newDate).getTime())) {
+        loveStartDate = newDate;
+        localStorage.setItem('love_os_start_date', loveStartDate);
+        document.getElementById('display-start-date').textContent = loveStartDate;
+        playSound('chime');
+      }
+    }
+
+    /* ==============================================================
+       4. DIGITAL CLOCK (Header Taskbar)
+       ============================================================== */
+    function updateHeaderClock() {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0];
+      const clockEl = document.getElementById('digital-clock');
+      if (clockEl) clockEl.textContent = timeStr;
+    }
+
+    /* ==============================================================
+       5. DUAL-ENGINE MUSIC PLAYER (REAL AUDIO + 8-BIT SYNTH FALLBACK)
+       ============================================================== */
+    let fakeTrackProgress = 0;
+    let synthProgressTimer = null;
+
+    function playMusicToggle() {
+      isMixtapePlaying = !isMixtapePlaying;
+      const playText = document.getElementById('play-text');
+      const heroText = document.getElementById('hero-mixtape-btn-text');
+      const eqContainer = document.getElementById('eq-container');
+      const synthStatus = document.getElementById('synth-status');
+      const track = playlist[currentTrackIdx];
+
+      if (isMixtapePlaying) {
+        if (playText) playText.textContent = "PAUSE";
+        if (heroText) heroText.textContent = "[ PAUSE MIXTAPE ]";
+        if (eqContainer) {
+          Array.from(eqContainer.children).forEach(bar => bar.classList.remove('paused-animation'));
+        }
+
+        if (track.src && track.src.trim() !== "") {
+          // Play real MP3 / stream audio
+          synthStatus.textContent = "AUDIO: MP3 PLAYING";
+          synthStatus.classList.replace('text-[#00FFA3]', 'text-[#00F0FF]');
+          clearTimeout(synthTimer);
+          clearInterval(synthProgressTimer);
+          
+          if (realAudio.src !== track.src) {
+            realAudio.src = track.src;
+          }
+          realAudio.play().catch(err => {
+            console.log("Audio autoplay prevented, switching to synth:", err);
+            startSynthEngine();
+          });
+        } else {
+          // Play 8-bit Synth Chiptune
+          startSynthEngine();
+        }
+      } else {
+        pauseAllEngines();
+      }
+    }
+
+    function startSynthEngine() {
+      const synthStatus = document.getElementById('synth-status');
+      synthStatus.textContent = "SYNTH: CHIPTUNE ON";
+      synthStatus.classList.replace('text-[#00F0FF]', 'text-[#00FFA3]');
+      realAudio.pause();
+      stepChiptuneSynth();
+      if (!synthProgressTimer) {
+        synthProgressTimer = setInterval(() => {
+          fakeTrackProgress = (fakeTrackProgress + 1.5) % 100;
+          document.getElementById('playback-progress').style.width = fakeTrackProgress + '%';
+          const totalSecs = Math.floor((fakeTrackProgress / 100) * 190);
+          const m = Math.floor(totalSecs / 60).toString().padStart(2, '0');
+          const s = (totalSecs % 60).toString().padStart(2, '0');
+          document.getElementById('track-timer').textContent = `${m}:${s}`;
+        }, 800);
+      }
+    }
+
+    function pauseAllEngines() {
+      const playText = document.getElementById('play-text');
+      const heroText = document.getElementById('hero-mixtape-btn-text');
+      const eqContainer = document.getElementById('eq-container');
+      const synthStatus = document.getElementById('synth-status');
+
+      if (playText) playText.textContent = "PLAY TRACK";
+      if (heroText) heroText.textContent = "[ PLAY MIXTAPE ]";
+      if (eqContainer) {
+        Array.from(eqContainer.children).forEach(bar => bar.classList.add('paused-animation'));
+      }
+      synthStatus.textContent = "STATUS: PAUSED";
+
+      realAudio.pause();
+      clearTimeout(synthTimer);
+      clearInterval(synthProgressTimer);
+      synthProgressTimer = null;
+    }
+
+    // Sync real audio progress
+    realAudio.ontimeupdate = () => {
+      if (realAudio.duration) {
+        const pct = (realAudio.currentTime / realAudio.duration) * 100;
+        document.getElementById('playback-progress').style.width = pct + '%';
+
+        const m = Math.floor(realAudio.currentTime / 60).toString().padStart(2, '0');
+        const s = Math.floor(realAudio.currentTime % 60).toString().padStart(2, '0');
+        document.getElementById('track-timer').textContent = `${m}:${s}`;
+      }
+    };
+
+    realAudio.onended = () => {
+      nextTrack();
+    };
+
+    function scrubAudio(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+
+      if (realAudio.src && !realAudio.paused && realAudio.duration) {
+        realAudio.currentTime = (pct / 100) * realAudio.duration;
+      } else {
+        fakeTrackProgress = pct;
+        document.getElementById('playback-progress').style.width = pct + '%';
+      }
+      playSound('click');
+    }
+
+    function loadTrack(idx) {
+      currentTrackIdx = idx;
+      const track = playlist[currentTrackIdx];
+      document.getElementById('track-name').textContent = track.title;
+      fakeTrackProgress = 0;
+      document.getElementById('playback-progress').style.width = '0%';
+      document.getElementById('track-timer').textContent = '00:00';
+
+      if (isMixtapePlaying) {
+        pauseAllEngines();
+        isMixtapePlaying = true;
+        playMusicToggle();
+      }
+    }
+
+    function nextTrack() {
+      playSound('click');
+      loadTrack((currentTrackIdx + 1) % playlist.length);
+    }
+
+    function prevTrack() {
+      playSound('click');
+      loadTrack((currentTrackIdx - 1 + playlist.length) % playlist.length);
+    }
+
+    function promptCustomMusicUrl() {
+      playSound('beep');
+      const url = prompt("Masukkan Link Audio MP3 / Lagu Kalian (atau nama file 'lagu-kita.mp3'):", "");
+      if (url && url.trim() !== "") {
+        const title = prompt("Masukkan Judul Lagu & Artis:", "Custom Track - Favorite Song");
+        playlist.unshift({
+          title: (title || "Custom Track").toUpperCase(),
+          type: "audio",
+          src: url.trim()
+        });
+        loadTrack(0);
+        playSound('chime');
+        alert("★ LAGU BERHASIL DITAMBAHKAN KE LOVE_AMP! ★\nTekan Play untuk mulai mendengarkan.");
+      }
+    }
+
+    function toggleAudioMute() {
+      isSoundMuted = !isSoundMuted;
+      const icon = document.getElementById('volume-icon');
+      const synthBadge = document.getElementById('synth-status');
+
+      if (isSoundMuted) {
+        icon.setAttribute('data-lucide', 'volume-x');
+        synthBadge.textContent = 'SOUND: MUTED';
+        synthBadge.classList.replace('text-[#00FFA3]', 'text-red-400');
+        clearTimeout(synthTimer);
+        realAudio.muted = true;
+      } else {
+        icon.setAttribute('data-lucide', 'volume-2');
+        synthBadge.textContent = 'SOUND: ACTIVE';
+        synthBadge.classList.replace('text-red-400', 'text-[#00FFA3]');
+        realAudio.muted = false;
+        if (isMixtapePlaying) {
+          playMusicToggle();
+          playMusicToggle();
+        }
+      }
+      lucide.createIcons();
+      playSound('click');
+    }
+
+    /* ==============================================================
+       6. INTERACTIVE MSN MESSENGER WITH NUDGE & AUTO-REPLY
+       ============================================================== */
+    function nudgeVibrate() {
+      playSound('nudge');
+      const appMain = document.getElementById('app-main');
+      const msnWin = document.getElementById('msn-window');
+
+      appMain.classList.add('shake-nudge');
+      msnWin.classList.add('border-[#FF2A85]');
+
+      setTimeout(() => {
+        appMain.classList.remove('shake-nudge');
+        msnWin.classList.remove('border-[#FF2A85]');
+      }, 700);
+    }
+
+    function handleChatEnter(e) {
+      if (e.key === 'Enter') {
+        sendQuickChatMessage();
+      }
+    }
+
+    function sendQuickChatMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input ? input.value.trim() : '';
+      if (!text) return;
+
+      playSound('click');
+      const container = document.getElementById('chat-messages-container');
+
+      // Append user's outgoing message
+      const myBubble = document.createElement('div');
+      myBubble.className = 'flex items-start gap-2 flex-row-reverse animate-pop-in';
+      myBubble.innerHTML = `
+        <div class="w-6 h-6 bg-[#FF2A85] border border-black flex items-center justify-center font-bold text-black text-[10px] flex-shrink-0">
+          ME
+        </div>
+        <div class="bg-[#FF2A85] text-black font-semibold border border-black p-2 shadow-[2px_2px_0_#000] flex-1">
+          <div class="text-[9px] text-black font-black mb-0.5">me (just now)</div>
+          ${escapeHtml(text)}
+        </div>
+      `;
+      container.appendChild(myBubble);
+      input.value = '';
+      container.scrollTop = container.scrollHeight;
+
+      // Cute simulated automated reply after 900ms
+      setTimeout(() => {
+        playSound('chime');
+        const cuteReplies = [
+          "Awww, you're so sweet! Stored straight in my permanent memory ♥",
+          "Hehe, stop making me blush through the terminal screen! 🥺👉👈",
+          "Received! Ping 0ms. Love level increased by 9999%",
+          "Can't wait to see you and pinch your cheeks for this! 🥰"
+        ];
+        const randomReply = cuteReplies[Math.floor(Math.random() * cuteReplies.length)];
+
+        const replyBubble = document.createElement('div');
+        replyBubble.className = 'flex items-start gap-2 animate-pop-in';
+        replyBubble.innerHTML = `
+          <div class="w-6 h-6 bg-[#00F0FF] border border-black flex items-center justify-center font-bold text-black text-[10px] flex-shrink-0">
+            U
+          </div>
+          <div class="bg-[#1C1C28] border border-black p-2 text-gray-200 shadow-[2px_2px_0_#000] flex-1">
+            <div class="text-[9px] text-[#00F0FF] font-bold mb-0.5">you (just now)</div>
+            ${randomReply}
+          </div>
+        `;
+        container.appendChild(replyBubble);
+        container.scrollTop = container.scrollHeight;
+      }, 900);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    /* ==============================================================
+       7. WINDOW ACTION CONTROLS (Minimize, Maximize, Close)
+       ============================================================== */
+    function handleWindowAction(winId, action) {
+      playSound('beep');
+      const win = document.getElementById(winId);
+      if (!win) return;
+      const body = win.querySelector('.window-body');
+
+      if (action === 'min') {
+        if (body) body.classList.toggle('hidden');
+      } else if (action === 'max') {
+        win.classList.toggle('scale-[1.02]');
+        win.classList.toggle('border-[#00FFA3]');
+      } else if (action === 'close') {
+        alert("CRITICAL WARNING:\nSystem shutdown rejected!\nReason: Heart cannot close the program that loves you ♥");
+      }
+    }
+
+    /* ==============================================================
+       8. RUNAWAY [NO] BUTTON & CONFETTI FINALE
+       ============================================================== */
+    const runawayPhrases = [
+      "Too slow! 😝",
+      "Nice try! 😜",
+      "Error 404: No not found 🥺",
+      "Cursor deflected! ⚡",
+      "Gotta click Yes! 💕"
+    ];
+    let runawayCount = 0;
+
+    function dodgeButton() {
+      playSound('beep');
+      const btn = document.getElementById('runaway-btn');
+      if (!btn) return;
+
+      const randomX = (Math.random() - 0.5) * 220;
+      const randomY = (Math.random() - 0.5) * 120;
+      btn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+
+      runawayCount++;
+      btn.textContent = runawayPhrases[runawayCount % runawayPhrases.length];
+    }
+
+    function celebrateLove(e) {
+      playSound('chime');
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#FF2A85', '#00FFA3', '#00F0FF', '#FFE600', '#FFFFFF']
+        });
+
+        setTimeout(() => {
+          confetti({
+            particleCount: 60,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#FF2A85', '#FF66B2', '#FFFFFF']
+          });
+          confetti({
+            particleCount: 60,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#00FFA3', '#00F0FF', '#FFE600']
+          });
+        }, 250);
+      }
+
+      const msg = document.getElementById('love-confirmed-msg');
+      if (msg) msg.classList.remove('hidden');
+    }
+
+    function triggerConfetti(e) {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 35,
+          spread: 50,
+          origin: { y: 0.75 },
+          colors: ['#FF2A85', '#00FFA3', '#FFFFFF']
+        });
+      }
+    }
+
+    function triggerVideoClipModal() {
+      playSound('chime');
+      alert("▶ Loading memory buffer: 'silly_moments.gif'\n\nCache hit: Your laugh in that moment literally rebooted my entire day with pure joy ♥");
+    }
+
+    function toggleStartMenu() {
+      const menu = document.getElementById('start-menu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    /* ==============================================================
+       9. INITIALIZATION ON WINDOW LOAD
+       ============================================================== */
+    window.onload = function() {
+      lucide.createIcons();
+      initCyberHeartCanvas();
+      initUptimeCounter();
+      setInterval(updateHeaderClock, 1000);
+      updateHeaderClock();
+    };
+  </script>
+</body>
+</html>
